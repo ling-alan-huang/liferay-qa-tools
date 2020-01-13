@@ -124,6 +124,7 @@ buildCompletionsFile {
 
 	completionsFile.text = text
 
+	logger.lifecycle "Updated '{}'", completionsFile
 }
 
 // sublime-settingsを作成
@@ -152,6 +153,8 @@ buildSettingFile {
 
 	// ファイルを出力
 	settingFile.text = text
+
+	logger.lifecycle "Updated '{}'", settingFile
 }
 
 // theme-settingsを作成
@@ -180,6 +183,8 @@ buildThemeFile {
 
 	// ファイルを出力
 	themeFile.text = text
+
+	logger.lifecycle "Updated '{}'", themeFile
 }
 
 // ユーザーフォルダを作成
