@@ -18,6 +18,8 @@
 
 7. Run `../gradlew -b /home/alan/liferay_code/master/liferay-portal/modules/qa-tools.gradle buildCompletionsFile`
 
+*Console:*
+
 ```
 alan@alan-5540:~/liferay_code/master/liferay-portal/modules[master]$ ../gradlew -b /home/alan/liferay_code/master/liferay-portal/modules/qa-tools.gradle buildCompletionsFile
 Picked up JAVA_TOOL_OPTIONS: -Duser.language=en
