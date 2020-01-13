@@ -1,0 +1,267 @@
+import java.util.regex.Matcher
+
+// ディレクトリ・ポータル
+String portalDir = "/home/alan/liferay_code/master/liferay-portal"
+
+// ディレクトリ・マクロ
+String macroDir = portalDir + "/portal-web/test/functional/com/liferay/portalweb/macros"
+
+// ディレクトリ・ファクション
+String functionsDir = portalDir + "/portal-web/test/functional/com/liferay/portalweb/functions"
+
+// 出力ディレクトリ
+String userDir = "/home/alan/.config/sublime-text-3/Packages/User/"
+
+// 出力ファイル
+String completionsFilename = "poshi.sublime-completions"
+
+// 入力ファイル
+def map = ['macro':macroDir, 'function':functionsDir]
+
+// タスク登録
+
+task buildCompletionsFile
+task buildSettingFile
+task buildThemeFile
+task mkUserDir
+
+// コード自動補完 機能
+buildCompletionsFile {
+	//	dependsOn mkUserDir
+	dependsOn buildSettingFile
+	dependsOn buildThemeFile
+
+	// 出力テクスト
+	String text = ""
+
+	// トリガー
+	String triggers = ""
+
+	map.each {
+		FileTree fileTree = fileTree(
+			dir: "${it.value}",
+			includes: ["**/*.${it.key}"])
+
+		// ファイルマップ
+		// <ファイル名→メソードマップ>
+		Map<String, Map<String, List<String>>> fileMap = new TreeMap<>()
+
+		// すべてのファイルをループする
+		fileTree.each {
+			File file ->
+
+			// ファイル内容
+			String fileContent = file.text
+
+			// メソードマップ
+			// <メソード名→パラメータリスト>
+			Map<String, List<String>> methodMap = new TreeMap<>()
+
+			// 正規表現 メソードパターン
+			Matcher matcher = fileContent =~ /(?s)\n\t${it.key} (\w+) \{.+?\n\t\}/
+
+			// メソード毎のパラメータを取得する
+			while (matcher.find()) {
+
+				// パラメータリスト初期化
+				List<String> parameterList = []
+
+				// メソード内容
+				String methodContent = matcher.group()
+
+				// メソード名
+				String methodName = matcher.group(1)
+
+				// メソード内容に行毎処理する
+				methodContent.eachLine {
+					String methodContentLine ->
+
+					// 正規表現 パラメータパターン
+					Matcher parameterMatcher = methodContentLine =~ /= "\$\{([^}]+)?\}"/
+
+					if (parameterMatcher.find()) {
+						parameterList.add(parameterMatcher.group(1))
+					}
+				}
+
+				// パラメータを並べ替える
+				if (!parameterList.isEmpty()) {
+					parameterList.unique().sort{
+						a, b->
+
+						a.compareTo(b)
+					}
+				}
+
+				// マップに入れる
+				methodMap.put(methodName, parameterList)
+			}
+			// メソード毎のパラメータを取得する END
+
+			// マップに入れる
+			fileMap.put(file.name, methodMap)
+		}
+		// すべてのファイルをループする END
+
+		// トリガーを追加
+		triggers += _generateAutoCompletions(it.key, fileMap)
+	}
+	text = """\
+		|{
+		|	"scope": "source.js - keyword.control.js - constant.language.js - string",
+		|
+		|	"completions":
+		|	[
+		|${triggers.substring(0, triggers.length() - 1)}
+		|	]
+		|}
+		|""".stripMargin()
+
+	//println text
+
+	// ファイルを出力
+	File completionsFile = file(userDir + completionsFilename)
+
+	completionsFile.text = text
+
+}
+
+// sublime-settingsを作成
+buildSettingFile {
+
+	File settingFile = file(userDir + "/JavaScript.sublime-settings")
+
+	//if (settingFile.exists()) {
+	//	return
+	//}
+
+	// 出力テクスト
+	String text = ""
+
+	text = """\
+		|
+		|{
+		|	"extensions":
+		|	[
+		|		"testcase",
+		|		"function",
+		|		"macro"
+		|	],
+		|	"word_separators": "/\\\\()\\"'-:,;<>~!@#\$%^&*|+=[]{}`~?"
+		|}""".stripMargin()
+
+	// ファイルを出力
+	settingFile.text = text
+}
+
+// theme-settingsを作成
+buildThemeFile {
+
+	File themeFile = file(userDir + "/Default.sublime-theme")
+
+	//if (themeFile.exists()) {
+	//	return
+	//}
+
+	// 出力テクスト
+	String text = ""
+
+	text = """\
+		|
+		|[
+		|	{
+		|		"class": "auto_complete_label",
+		|		"fg": [155 ,163, 177],
+		|		"match_fg": [200, 203, 209],
+		|		"selected_fg": [215, 216, 219],
+		|		"selected_match_fg": [0, 203, 209]
+		|	},
+		|]""".stripMargin()
+
+	// ファイルを出力
+	themeFile.text = text
+}
+
+// ユーザーフォルダを作成
+mkUserDir {
+
+	File dir = file(userDir)
+
+	if (dir.exists()) {
+		return
+	}
+
+	dir.mkdirs();
+}
+
+// パラメータ組み合わせ
+private String _generateAutoCompletions(String type, Map<String, Map<String, List<String>>> fileMap) {
+
+	String text = ""
+
+	type = type.substring(0, 1).toUpperCase() + type.substring(1).toLowerCase()
+
+	text += """\
+		|
+		|
+		|		// ${type}
+		|		${_generateTrigger(type, fileMap)}""".stripMargin()
+
+	return text
+}
+
+// トリガーを作成
+private String _generateTrigger(String type, Map<String, Map<String, List<String>>> fileMap) {
+	// トリガー
+	String triggers = ""
+
+	fileMap.each {
+		//ファイル名
+		String fileName = it.key
+
+		//拡張子を除くファイル名
+		String fileNameWithOutExt = fileName.substring(0, fileName.indexOf("."))
+
+		def methodMap = it.value
+
+		methodMap.each {
+
+			String methodName = it.key
+
+			def parameterList = it.value
+
+			String parameters = ""
+
+			String triggerName = "${fileNameWithOutExt}.${methodName}"
+
+			// パラメータ組み合わせ
+			parameters = _combineParameters(parameterList)
+
+			triggers += """\
+				|
+				|		{ "trigger": "${triggerName}\\t<${type}>", "contents": "${triggerName}(${parameters})" },""".stripMargin()
+		}
+	}
+
+	return triggers
+}
+// パラメータ組み合わせ
+private String _combineParameters(List<String> parameterList) {
+
+	if (parameterList.size() == 0) {
+		return ""
+	}
+
+	if (parameterList.size() == 1) {
+		return parameterList[0] + "= "
+	}
+
+	String parameter = ""
+
+	for (int i = 0; i < parameterList.size(); i++) {
+		parameter += "\\n\\t" + parameterList[i] + " = \${" + (i + 1) + ":},"
+
+	}
+
+	return parameter.substring(0, parameter.length() - 1)
+}
