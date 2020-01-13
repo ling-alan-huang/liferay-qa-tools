@@ -10,7 +10,7 @@ String macroDir = portalDir + "/portal-web/test/functional/com/liferay/portalweb
 String functionsDir = portalDir + "/portal-web/test/functional/com/liferay/portalweb/functions"
 
 // 出力ディレクトリ
-String userDir = "/home/alan/.config/sublime-text-3/Packages/User/"
+String sublimeUserDir = "/home/alan/.config/sublime-text-3/Packages/User/"
 
 // 出力ファイル
 String completionsFilename = "poshi.sublime-completions"
@@ -23,11 +23,11 @@ def map = ['macro':macroDir, 'function':functionsDir]
 task buildCompletionsFile
 task buildSettingFile
 task buildThemeFile
-task mkUserDir
+task mkSublimeUserDir
 
 // コード自動補完 機能
 buildCompletionsFile {
-	//	dependsOn mkUserDir
+	//	dependsOn mkSublimeUserDir
 	dependsOn buildSettingFile
 	dependsOn buildThemeFile
 
@@ -120,7 +120,7 @@ buildCompletionsFile {
 	//println text
 
 	// ファイルを出力
-	File completionsFile = file(userDir + completionsFilename)
+	File completionsFile = file(sublimeUserDir + completionsFilename)
 
 	completionsFile.text = text
 
@@ -130,7 +130,7 @@ buildCompletionsFile {
 // sublime-settingsを作成
 buildSettingFile {
 
-	File settingFile = file(userDir + "/JavaScript.sublime-settings")
+	File settingFile = file(sublimeUserDir + "JavaScript.sublime-settings")
 
 	//if (settingFile.exists()) {
 	//	return
@@ -160,7 +160,7 @@ buildSettingFile {
 // theme-settingsを作成
 buildThemeFile {
 
-	File themeFile = file(userDir + "/Default.sublime-theme")
+	File themeFile = file(sublimeUserDir + "Default.sublime-theme")
 
 	//if (themeFile.exists()) {
 	//	return
@@ -188,9 +188,9 @@ buildThemeFile {
 }
 
 // ユーザーフォルダを作成
-mkUserDir {
+mkSublimeUserDir {
 
-	File dir = file(userDir)
+	File dir = file(sublimeUserDir)
 
 	if (dir.exists()) {
 		return

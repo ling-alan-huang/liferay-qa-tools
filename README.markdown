@@ -14,7 +14,7 @@
 
 5. Replace function directory: `String functionsDir = portalDir + "/portal-web/test/functional/com/liferay/portalweb/functions"`
 
-6. Replace Sublime directory: `String userDir = "/home/alan/.config/sublime-text-3/Packages/User/"`
+6. Replace Sublime User directory: `String sublimeUserDir = "/home/alan/.config/sublime-text-3/Packages/User/"`
 
 7. Run `../gradlew -b /home/alan/liferay_code/master/liferay-portal/modules/qa-tools.gradle buildCompletionsFile`
 
