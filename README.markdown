@@ -4,6 +4,9 @@
 
 ### コード自動補完ファイル（サブライム用）
 
+> This script will overwrite `Default.sublime-theme, JavaScript.sublime-settings` in `/home/alan/.config/sublime-text-3/Packages/User/`,
+if your have customized those files, please backup.
+
 1. Place `qa-tools.gradle` in somewhere, for example: `/home/alan/liferay_code/master/liferay-portal/modules/qa-tools.gradle`
 
 2. Open `qa-tools.gradle`
@@ -17,9 +20,6 @@
 6. Replace Sublime User directory: `String sublimeUserDir = "/home/alan/.config/sublime-text-3/Packages/User/"`
 
 7. Run `../gradlew -b /home/alan/liferay_code/master/liferay-portal/modules/qa-tools.gradle buildCompletionsFile`
-
-> This script will overwrite `Default.sublime-theme, JavaScript.sublime-settings` in `/home/alan/.config/sublime-text-3/Packages/User/`,
-if your have customized those files, please backup.
 
 *Console:*
 
