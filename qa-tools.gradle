@@ -148,7 +148,7 @@ buildSettingFile {
 		|		"function",
 		|		"macro"
 		|	],
-		|	"word_separators": "/\\\\()\\"'-:,;<>~!@#\$%^&*|+=[]{}`~?"
+		|	"word_separators": "/\\\\()\\"'-:,.;<>~!@#\$%^&*|+=[]{}`~?"
 		|}""".stripMargin()
 
 	// ファイルを出力
