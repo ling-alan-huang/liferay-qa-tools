@@ -257,8 +257,8 @@ searchDependencies {
 		map.each {
 			FileTree fileTree = fileTree(
 				dir: "${it.value}",
-				//			includes: ["**/*.${it.key}"])
-				includes: ["**/XSS.${it.key}"])
+				includes: ["**/*.${it.key}"])
+			//includes: ["**/XSS.${it.key}"])
 
 			String type = it.key
 
@@ -308,7 +308,7 @@ searchDependencies {
 						Matcher pathMatcher = methodContentLine =~ / = "(\w+#[A-Z_]+)"/
 
 						// 正規表現 マクロ・テストケースパターン
-						Matcher macroTestcaseMatcher = methodContentLine =~ /\t(\w+)(\.(\w+))?\(/
+						Matcher macroTestcaseMatcher = methodContentLine =~ /\t([A-Z]\w+)(\.(\w+))?\(/
 
 						// 依頼リスト
 						List<String> dependenciesList = []
