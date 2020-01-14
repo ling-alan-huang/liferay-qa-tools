@@ -4,8 +4,7 @@
 
 ### コード自動補完ファイル（サブライム用）
 
-> This script will overwrite `Default.sublime-theme, JavaScript.sublime-settings` in `/home/alan/.config/sublime-text-3/Packages/User/`,
-if your have customized those files, please backup.
+> Backup and remove all files in `/home/alan/.config/sublime-text-3/Packages/User/`
 
 1. Place `qa-tools.gradle` in somewhere, for example: `/home/alan/liferay_code/master/liferay-portal/modules/qa-tools.gradle`
 
@@ -13,13 +12,11 @@ if your have customized those files, please backup.
 
 3. Replace Potal directory: `String portalDir = "/home/alan/liferay_code/master/liferay-portal"`
 
-4. Replace macro directory: `String macroDir = portalDir + "/portal-web/test/functional/com/liferay/portalweb/macros"`
+4. Replace Sublime User directory: `String sublimeUserDir = "/home/alan/.config/sublime-text-3/Packages/User/"`
 
-5. Replace function directory: `String functionsDir = portalDir + "/portal-web/test/functional/com/liferay/portalweb/functions"`
+5. Run `../gradlew -b /home/alan/liferay_code/master/liferay-portal/modules/qa-tools.gradle buildCompletionsFile`
 
-6. Replace Sublime User directory: `String sublimeUserDir = "/home/alan/.config/sublime-text-3/Packages/User/"`
-
-7. Run `../gradlew -b /home/alan/liferay_code/master/liferay-portal/modules/qa-tools.gradle buildCompletionsFile`
+-------------------
 
 *Console:*
 
