@@ -31,7 +31,7 @@ buildCompletionsFile {
 	dependsOn buildSettingFile
 	dependsOn buildThemeFile
 
-	// 出力テクスト
+	// 出力テキスト
 	String text = ""
 
 	// トリガー
@@ -136,7 +136,7 @@ buildSettingFile {
 	//	return
 	//}
 
-	// 出力テクスト
+	// 出力テキスト
 	String text = ""
 
 	text = """\
@@ -166,7 +166,7 @@ buildThemeFile {
 	//	return
 	//}
 
-	// 出力テクスト
+	// 出力テキスト
 	String text = ""
 
 	text = """\
