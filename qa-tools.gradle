@@ -258,7 +258,7 @@ private String _combineParameters(List<String> parameterList) {
 	}
 
 	if (parameterList.size() == 1) {
-		return parameterList[0] + "= "
+		return parameterList[0] + " = "
 	}
 
 	String parameter = ""
