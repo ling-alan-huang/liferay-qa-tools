@@ -9,6 +9,12 @@ String macroDir = portalDir + "/portal-web/test/functional/com/liferay/portalweb
 // ディレクトリ・ファクション
 String functionsDir = portalDir + "/portal-web/test/functional/com/liferay/portalweb/functions"
 
+// ディレクトリ・パス
+String pathDir = portalDir + "/portal-web/test/functional/com/liferay/portalweb/paths"
+
+// ディレクトリ・テストケース
+String testcaseDir = portalDir + "/portal-web/test/functional/com/liferay/portalweb/tests"
+
 // 出力ディレクトリ
 String sublimeUserDir = "/home/alan/.config/sublime-text-3/Packages/User/"
 
@@ -24,6 +30,7 @@ task buildCompletionsFile
 task buildSettingFile
 task buildThemeFile
 task mkSublimeUserDir
+task searchDependencies
 
 // コード自動補完 機能
 buildCompletionsFile {
@@ -31,172 +38,344 @@ buildCompletionsFile {
 	dependsOn buildSettingFile
 	dependsOn buildThemeFile
 
-	// 出力テキスト
-	String text = ""
+	doLast {
+		// 出力テキスト
+		String text = ""
 
-	// トリガー
-	String triggers = ""
+		// トリガー
+		String triggers = ""
 
-	map.each {
-		FileTree fileTree = fileTree(
-			dir: "${it.value}",
-			includes: ["**/*.${it.key}"])
+		map.each {
+			FileTree fileTree = fileTree(
+				dir: "${it.value}",
+				includes: ["**/*.${it.key}"])
 
-		// ファイルマップ
-		// <ファイル名→メソードマップ>
-		Map<String, Map<String, List<String>>> fileMap = new TreeMap<>()
+			// ファイルマップ
+			// <ファイル名→メソードマップ>
+			Map<String, Map<String, List<String>>> fileMap = new TreeMap<>()
 
-		// すべてのファイルをループする
-		fileTree.each {
-			File file ->
+			// すべてのファイルをループする
+			fileTree.each {
+				File file ->
 
-			// ファイル内容
-			String fileContent = file.text
+				// ファイル内容
+				String fileContent = file.text
 
-			// メソードマップ
-			// <メソード名→パラメータリスト>
-			Map<String, List<String>> methodMap = new TreeMap<>()
+				// メソードマップ
+				// <メソード名→パラメータリスト>
+				Map<String, List<String>> methodMap = new TreeMap<>()
 
-			// 正規表現 メソードパターン
-			Matcher matcher = fileContent =~ /(?s)\n\t${it.key} (\w+) \{.+?\n\t\}/
+				// 正規表現 メソードパターン
+				Matcher matcher = fileContent =~ /(?s)\n\t${it.key} (\w+) \{.+?\n\t\}/
 
-			// メソード毎のパラメータを取得する
-			while (matcher.find()) {
+				// メソード毎のパラメータを取得する
+				while (matcher.find()) {
 
-				// パラメータリスト初期化
-				List<String> parameterList = []
+					// パラメータリスト初期化
+					List<String> parameterList = []
 
-				// メソード内容
-				String methodContent = matcher.group()
+					// メソード内容
+					String methodContent = matcher.group()
 
-				// メソード名
-				String methodName = matcher.group(1)
+					// メソード名
+					String methodName = matcher.group(1)
 
-				// メソード内容に行毎処理する
-				methodContent.eachLine {
-					String methodContentLine ->
+					// メソード内容に行毎処理する
+					methodContent.eachLine {
+						String methodContentLine ->
 
-					// 正規表現 パラメータパターン
-					Matcher parameterMatcher = methodContentLine =~ /= "\$\{([^}]+)?\}"/
+						// 正規表現 パラメータパターン
+						Matcher parameterMatcher = methodContentLine =~ /= "\$\{([^}]+)?\}"/
 
-					if (parameterMatcher.find()) {
-						parameterList.add(parameterMatcher.group(1))
+						if (parameterMatcher.find()) {
+							parameterList.add(parameterMatcher.group(1))
+						}
 					}
-				}
 
-				// パラメータを並べ替える
-				if (!parameterList.isEmpty()) {
-					parameterList.unique().sort{
-						a, b->
+					// パラメータを並べ替える
+					if (!parameterList.isEmpty()) {
+						parameterList.unique().sort{
+							a, b->
 
-						a.compareTo(b)
+							a.compareTo(b)
+						}
 					}
+
+					// マップに入れる
+					methodMap.put(methodName, parameterList)
 				}
+				// メソード毎のパラメータを取得する END
 
 				// マップに入れる
-				methodMap.put(methodName, parameterList)
+				fileMap.put(file.name, methodMap)
 			}
-			// メソード毎のパラメータを取得する END
+			// すべてのファイルをループする END
 
-			// マップに入れる
-			fileMap.put(file.name, methodMap)
+			// トリガーを追加
+			triggers += _generateAutoCompletions(it.key, fileMap)
 		}
-		// すべてのファイルをループする END
+		text = """\
+			|{
+			|	"scope": "source.js - keyword.control.js - constant.language.js - string",
+			|
+			|	"completions":
+			|	[
+			|${triggers.substring(0, triggers.length() - 1)}
+			|	]
+			|}
+			|""".stripMargin()
 
-		// トリガーを追加
-		triggers += _generateAutoCompletions(it.key, fileMap)
+		//println text
+
+		// ファイルを出力
+		File completionsFile = file(sublimeUserDir + completionsFilename)
+
+		completionsFile.text = text
+
+		logger.lifecycle "Updated '{}'", completionsFile
 	}
-	text = """\
-		|{
-		|	"scope": "source.js - keyword.control.js - constant.language.js - string",
-		|
-		|	"completions":
-		|	[
-		|${triggers.substring(0, triggers.length() - 1)}
-		|	]
-		|}
-		|""".stripMargin()
-
-	//println text
-
-	// ファイルを出力
-	File completionsFile = file(sublimeUserDir + completionsFilename)
-
-	completionsFile.text = text
-
-	logger.lifecycle "Updated '{}'", completionsFile
 }
 
 // sublime-settingsを作成
 buildSettingFile {
 
-	File settingFile = file(sublimeUserDir + "JavaScript.sublime-settings")
+	doLast {
+		File settingFile = file(sublimeUserDir + "JavaScript.sublime-settings")
 
-	//if (settingFile.exists()) {
-	//	return
-	//}
+		//if (settingFile.exists()) {
+		//	return
+		//}
 
-	// 出力テキスト
-	String text = ""
+		// 出力テキスト
+		String text = ""
 
-	text = """\
-		|
-		|{
-		|	"extensions":
-		|	[
-		|		"testcase",
-		|		"function",
-		|		"macro"
-		|	],
-		|	"word_separators": "/\\\\()\\"'-:,.;<>~!@#\$%^&*|+=[]{}`~?"
-		|}""".stripMargin()
+		text = """\
+			|
+			|{
+			|	"extensions":
+			|	[
+			|		"testcase",
+			|		"function",
+			|		"macro"
+			|	],
+			|	"word_separators": "/\\\\()\\"'-:,.;<>~!@#\$%^&*|+=[]{}`~?"
+			|}""".stripMargin()
 
-	// ファイルを出力
-	settingFile.text = text
+		// ファイルを出力
+		settingFile.text = text
 
-	logger.lifecycle "Updated '{}'", settingFile
+		logger.lifecycle "Updated '{}'", settingFile
+	}
 }
 
 // theme-settingsを作成
 buildThemeFile {
 
-	File themeFile = file(sublimeUserDir + "Default.sublime-theme")
+	doLast {
+		File themeFile = file(sublimeUserDir + "Default.sublime-theme")
 
-	//if (themeFile.exists()) {
-	//	return
-	//}
+		//if (themeFile.exists()) {
+		//	return
+		//}
 
-	// 出力テキスト
-	String text = ""
+		// 出力テキスト
+		String text = ""
 
-	text = """\
-		|
-		|[
-		|	{
-		|		"class": "auto_complete_label",
-		|		"fg": [155 ,163, 177],
-		|		"match_fg": [200, 203, 209],
-		|		"selected_fg": [215, 216, 219],
-		|		"selected_match_fg": [0, 203, 209]
-		|	},
-		|]""".stripMargin()
+		text = """\
+			|
+			|[
+			|	{
+			|		"class": "auto_complete_label",
+			|		"fg": [155 ,163, 177],
+			|		"match_fg": [200, 203, 209],
+			|		"selected_fg": [215, 216, 219],
+			|		"selected_match_fg": [0, 203, 209]
+			|	},
+			|]""".stripMargin()
 
-	// ファイルを出力
-	themeFile.text = text
+		// ファイルを出力
+		themeFile.text = text
 
-	logger.lifecycle "Updated '{}'", themeFile
+		logger.lifecycle "Updated '{}'", themeFile
+	}
+}
+
+// 依頼検索 機能
+searchDependencies {
+
+	doLast {
+		map = ['macro':macroDir, 'path':pathDir, 'testcase':testcaseDir]
+
+		// ファイルマップ
+		// <ファイル名 → メソードリスト>
+		Map<String, List<String>> fileMap = new TreeMap<>()
+
+		map.each {
+			FileTree fileTree = fileTree(
+				dir: "${it.value}",
+				includes: ["**/*.${it.key}"])
+
+			String type = it.key
+
+			if (type.equals("testcase")) {
+				type = "test"
+			}
+
+			// すべてのファイルをループする
+			fileTree.each {
+				File file ->
+
+				// メソードリスト
+				List<String> methodList = []
+
+				String pattern = ""
+
+				if (type.equals("path")) {
+					pattern = "<td>([A-Z_]+)</td>"
+				}
+				else {
+					pattern = "\\n\\t${type} (\\w+) \\{\\n"
+				}
+
+				file.text.eachMatch(pattern) {
+					all, methodName ->
+
+					methodList.add(methodName)
+				}
+				// マップに入れる
+				fileMap.put(file.name, methodList)
+			}
+			// すべてのファイルをループする END
+		}
+
+		map = ['macro':macroDir, 'testcase':testcaseDir]
+
+		// 依頼マップ
+		// <ファイル名#メソード → 依頼リスト>
+		Map<String, List<String>> dependenciesMap = new TreeMap<>()
+
+		map.each {
+			FileTree fileTree = fileTree(
+				dir: "${it.value}",
+				//			includes: ["**/*.${it.key}"])
+				includes: ["**/XSS.${it.key}"])
+
+			String type = it.key
+
+			if (type.equals("testcase")) {
+				type = "test"
+			}
+
+			// すべてのファイルをループする
+			fileTree.each {
+				File file ->
+
+				//ファイル名
+				String fileName = file.getName()
+
+				//拡張子を除くファイル名
+				String fileNameWithOutExt = fileName.substring(0, fileName.indexOf("."))
+
+				// ファイル内容
+				String fileContent = file.text
+
+				String pattern = ""
+
+				if (type.equals("test")) {
+					pattern = "(?s)\\n\\t(?:${type} )?(\\w+) \\{.+?\\n\\t\\}"
+				}
+				else {
+					pattern = "(?s)\\n\\t${type} (\\w+) \\{.+?\\n\\t\\}"
+				}
+
+				// 正規表現 メソード
+				Matcher matcher = fileContent =~ pattern
+
+				// メソード毎のパラメータを取得する
+				while (matcher.find()) {
+
+					// メソード内容
+					String methodContent = matcher.group(0)
+
+					// メソード名
+					String methodName = matcher.group(1)
+
+					// メソード内容に行毎処理する
+					methodContent.eachLine {
+						String methodContentLine ->
+
+						// 正規表現 パスパターン
+						Matcher pathMatcher = methodContentLine =~ / = "(\w+#[A-Z_]+)"/
+
+						// 正規表現 マクロ・テストケースパターン
+						Matcher macroTestcaseMatcher = methodContentLine =~ /\t(\w+)(\.(\w+))?\(/
+
+						// 依頼リスト
+						List<String> dependenciesList = []
+
+						// 依頼KEY
+						String dependencyKey = ""
+
+						if (pathMatcher.find()) {
+							// 依頼KEY
+							dependencyKey = pathMatcher.group(1)
+
+							if (dependenciesMap.containsKey(dependencyKey)) {
+								dependenciesList = dependenciesMap.get(dependencyKey)
+							}
+						}
+						else if (macroTestcaseMatcher.find()) {
+							if ((macroTestcaseMatcher.group(2) != null)) {
+								// 依頼KEY
+								dependencyKey = macroTestcaseMatcher.group(1) + "#" + macroTestcaseMatcher.group(3)
+							}
+							else {
+								// 依頼KEY
+								dependencyKey = macroTestcaseMatcher.group(1) + "#" + macroTestcaseMatcher.group(1)
+							}
+
+							if (dependenciesMap.containsKey(dependencyKey)) {
+								dependenciesList = dependenciesMap.get(dependencyKey)
+							}
+						}
+
+						if (!dependencyKey.equals("")) {
+							dependenciesList.add(fileNameWithOutExt + "#" + methodName)
+
+							dependenciesMap.put(dependencyKey, dependenciesList.unique())
+						}
+
+					}
+					// メソード内容に行毎処理する END
+				}
+				// メソード毎のパラメータを取得する END
+			}
+			// すべてのファイルをループする END
+		}
+
+		dependenciesMap.each {
+
+			println "======${it.key}"
+
+			it.value.each {
+				println "[${it}]"
+			}
+		}
+	}
 }
 
 // ユーザーフォルダを作成
 mkSublimeUserDir {
 
-	File dir = file(sublimeUserDir)
+	doLast {
+		File dir = file(sublimeUserDir)
 
-	if (dir.exists()) {
-		return
+		if (dir.exists()) {
+			return
+		}
+
+		dir.mkdirs();
 	}
-
-	dir.mkdirs();
 }
 
 // パラメータ組み合わせ
