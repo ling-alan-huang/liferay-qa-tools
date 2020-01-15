@@ -204,6 +204,8 @@ buildThemeFile {
 searchDependencies {
 
 	doLast {
+		assert project.properties["dependency"] : "Please provide a value for the '-Pdependency' property"
+
 		map = ['macro':macroDir, 'path':pathDir, 'testcase':testcaseDir]
 
 		// ファイルマップ
@@ -353,14 +355,9 @@ searchDependencies {
 			// すべてのファイルをループする END
 		}
 
-		dependenciesMap.each {
+		String text = _combineDependencies(0, dependency, dependenciesMap)
 
-			println "======${it.key}"
-
-			it.value.each {
-				println "[${it}]"
-			}
-		}
+		println text
 	}
 }
 
@@ -448,4 +445,25 @@ private String _combineParameters(List<String> parameterList) {
 	}
 
 	return parameter.substring(0, parameter.length() - 1)
+}
+
+// 依頼組み合わせ
+private String _combineDependencies(int level, String dependency, Map<String, List<String>> dependenciesMap) {
+
+	String indentation = "\t" * level
+
+	// マップに依頼が存在しない場合
+	if (!dependenciesMap.containsKey(dependency)) {
+		return indentation + dependency
+	}
+
+	// 出力テキスト
+	String text = ""
+
+	// 依頼リストを繰り返す
+	for (String de : dependenciesMap.get(dependency)) {
+		text += "\n" + _combineDependencies(level + 1, de, dependenciesMap)
+	}
+
+	return indentation + dependency + text
 }
