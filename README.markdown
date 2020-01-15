@@ -4,7 +4,9 @@
 
 Download `lfieray-qa-tools`.
 
-### コード自動補完ファイル（サブライム用）
+<s>### コード自動補完ファイル（サブライム用）</s>
+
+### 生成代码自动完成文件（Sublime使用）
 
 > Backup and remove all files in `/home/alan/.config/sublime-text-3/Packages/User/`
 
@@ -39,7 +41,9 @@ BUILD SUCCESSFUL in 1s
 alan@alan-5540:~/liferay_code/liferay-qa-tools[master]$
 ```
 
-### PATH 依頼検索
+<s>### PATH 依頼検索</s>
+
+### PATH的调用关系查找
 
 For example:
 
