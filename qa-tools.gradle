@@ -362,7 +362,7 @@ searchDependencies {
 
 		outputFile.text = text
 
-		logger.lifecycle "Updated '{}'", searchDependencies
+		logger.lifecycle "Updated '{}'", outputFile
 	}
 }
 
