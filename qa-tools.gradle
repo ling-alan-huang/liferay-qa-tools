@@ -206,6 +206,8 @@ searchDependencies {
 	doLast {
 		assert project.properties["dependency"] : "Please provide a value for the '-Pdependency' property"
 
+		assert project.properties["onlyLeaves"] : "Please provide a value for the '-PonlyLeaves' property"
+
 		map = ['macro':macroDir, 'path':pathDir, 'testcase':testcaseDir]
 
 		// ファイルマップ
@@ -355,7 +357,7 @@ searchDependencies {
 			// すべてのファイルをループする END
 		}
 
-		String text = _combineDependencies(0, dependency, dependenciesMap)
+		String text = _combineDependencies(onlyLeaves, 0, dependency, dependenciesMap)
 
 		// ファイルを出力
 		File outputFile = file(dependency + ".log")
@@ -453,9 +455,13 @@ private String _combineParameters(List<String> parameterList) {
 }
 
 // 依頼組み合わせ
-private String _combineDependencies(int level, String dependency, Map<String, List<String>> dependenciesMap) {
+private String _combineDependencies(String onlyLeaves, int level, String dependency, Map<String, List<String>> dependenciesMap) {
 
-	String indentation = "\t" * level
+	String indentation = ""
+
+	if (onlyLeaves.equals('false')) {
+		indentation = "\t" * level
+	}
 
 	// マップに依頼が存在しない場合
 	if (!dependenciesMap.containsKey(dependency)) {
@@ -467,8 +473,14 @@ private String _combineDependencies(int level, String dependency, Map<String, Li
 
 	// 依頼リストを繰り返す
 	for (String de : dependenciesMap.get(dependency)) {
-		text += "\n" + _combineDependencies(level + 1, de, dependenciesMap)
+		text += "\n" + _combineDependencies(onlyLeaves, level + 1, de, dependenciesMap)
 	}
+
+	if (onlyLeaves.equals('true')) {
+		dependency = ""
+	}
+
+	text = text.replaceAll("\\n\\n", "\n")
 
 	return indentation + dependency + text
 }
