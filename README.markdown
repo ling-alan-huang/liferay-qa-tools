@@ -16,7 +16,7 @@ Download `lfieray-qa-tools`.
 
 4. Replace Sublime User directory: `String sublimeUserDir = "/home/alan/.config/sublime-text-3/Packages/User/"`
 
-5. Run `./gradlew -b qa-tools.gradle buildCompletionsFile`
+5. In `lfieray-qa-tools`, run `./gradlew -b qa-tools.gradle buildCompletionsFile`
 
 -------------------
 
@@ -49,7 +49,7 @@ For example:
 
 `Button#SAVE` is what you are looking for.
 
-Run `./gradlew -b qa-tools.gradle searchDependencies -Pdependency='Button#SAVE'`
+In `lfieray-qa-tools`, run `./gradlew -b qa-tools.gradle searchDependencies -Pdependency='Button#SAVE'`
 
 -------------------
 
