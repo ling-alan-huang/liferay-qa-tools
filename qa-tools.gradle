@@ -357,7 +357,12 @@ searchDependencies {
 
 		String text = _combineDependencies(0, dependency, dependenciesMap)
 
-		println text
+		// ファイルを出力
+		File outputFile = file(dependency + ".log")
+
+		outputFile.text = text
+
+		logger.lifecycle "Updated '{}'", searchDependencies
 	}
 }
 
