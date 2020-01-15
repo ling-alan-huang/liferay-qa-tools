@@ -47,16 +47,19 @@ alan@alan-5540:~/liferay_code/liferay-qa-tools[master]$
 
 For example:
 
-`Button#SAVE` is what you are looking for.
+Parameter `Pdependency`: is what you are looking for
 
-In `lfieray-qa-tools`, run `./gradlew -b qa-tools.gradle searchDependencies -Pdependency='Button#SAVE'`
+Parameter `PonlyLeaves`: if `true` only show the leaves, if `false` show the tree
+
+
+In `lfieray-qa-tools`, run `./gradlew -b qa-tools.gradle  searchDependencies -Pdependency='Button#SAVE' -PonlyLeaves='false'`
 
 -------------------
 
 *Console:*
 
 ```
-alan@alan-5540:~/liferay_code/liferay-qa-tools[master]$ ./gradlew -b qa-tools.gradle searchDependencies -Pdependency='Button#SAVE'
+alan@alan-5540:~/liferay_code/liferay-qa-tools[master]$ ./gradlew -b qa-tools.gradle  searchDependencies -Pdependency='Button#SAVE' -PonlyLeaves='false'
 Picked up JAVA_TOOL_OPTIONS: -Duser.language=en
 Java HotSpot(TM) 64-Bit Server VM warning: ignoring option MaxPermSize=256m; support was removed in 8.0
 
@@ -65,7 +68,7 @@ Updated '/home/alan/liferay_code/liferay-qa-tools/Button#SAVE.log'
 
 BUILD SUCCESSFUL in 22s
 1 actionable task: 1 executed
-alan@alan-5540:~/liferay_code/liferay-qa-tools[master]$
+alan@alan-5540:~/liferay_code/liferay-qa-tools[master]$ 
 ```
 -------------------
 
